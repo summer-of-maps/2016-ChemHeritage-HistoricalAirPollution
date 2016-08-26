@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Monthly Air Pollution in the United States</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta https-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/3.15/themes/css/cartodb.css"/>
+    <link rel="shortcut icon" href="https://cartodb.com/assets/favicon.ico" />
+    <link rel="stylesheet" href="css/leaflet.easybutton.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,400" />
+
+    <!-- Map takes up full browser window -->
+    <style>
+      html, body, #map {
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        font-family: "Lato", Arial, sans-serif;
+      }
+      .container {
+        position: absolute;
+        width: 30%;
+        top: 12%;
+        bottom: 0;
+        left: 0;
+        background-color: #000;
+        border-right: #FFF 4px solid;
+      }
+      #map {
+        position: absolute;
+        left: 30%;
+        top: 12%;
+        height: 88%;
+        right: 0%;
+      }
+      .layer_selector {
+          background: #000000;
+          font-weight: bold;
+          padding: 0;
+          border-top: 4px solid #FFF;
+          border-bottom: 4px solid #FFF;
+      }
+      .layer_selector p {
+          color: #FFFFFF;
+          font-size: 2.5vh;
+          padding: 3.7% 7%;
+          margin: 0;
+          border-bottom: 2px solid #999;
+          order: 1;
+      }
+      .layer_selector ul {
+          padding: 0;
+          margin: 0;
+          list-style-type: none;
+      }
+      .layer_selector li {
+          padding: 3.7% 7%;
+          font-size: 2vh;
+          font-weight: 300;
+          color: #FFFFFF;
+          cursor: pointer;
+      }
+      .layer_selector li:not(:last-child) {
+          border-bottom: 1px solid #999;
+      }
+      .layer_selector li:hover {
+          background-color: #464646;
+          cursor: pointer;
+      }
+      .all_circle {
+          border-radius: 50px;
+          border: 2px solid #FFFFFF;
+          width: 15px;
+          height: 15px;
+          margin: 1% 5% 0% 0%;
+          background: #BDBDBD; /*For browsers that do not support gradients*/
+          background: linear-gradient(#FCF402, #FFF, #08519C);
+      }
+      .cm_circle {
+          border-radius: 50px;
+          border: 2px solid #FFFFFF;
+          width: 15px;
+          height: 15px;
+          margin: 1% 5% 0% 0%;
+          background: #A50F15;
+      }
+      .lead_circle {
+          border-radius: 50px;
+          border: 2px solid #FFFFFF;
+          width: 15px;
+          height: 15px;
+          margin: 1% 5% 0% 0%;
+          background: #08519C;
+      }
+      .nd_circle {
+          border-radius: 50px;
+          border: 2px solid #FFFFFF;
+          width: 15px;
+          height: 15px;
+          margin: 1% 5% 0% 0%;
+          background: #35200D;
+      }
+      .o_circle {
+          border-radius: 50px;
+          border: 2px solid #FFFFFF;
+          width: 15px;
+          height: 15px;
+          margin: 1% 5% 0% 0%;
+          background: #A63603;
+      }
+      .pm_circle {
+          border-radius: 50px;
+          border: 2px solid #FFFFFF;
+          width: 15px;
+          height: 15px;
+          margin: 1% 5% 0% 0%;
+          background: #54278F;
+      }
+      .sd_circle {
+          border-radius: 50px;
+          border: 2px solid #FFFFFF;
+          width: 15px;
+          height: 15px;
+          margin: 1% 5% 0% 0%;
+          background: #FCF402;
+      }
+      #container {
+        position: absolute;
+        width: 100%;
+        top: 0%;
+        height: 12%;
+        background: #000000;
+        border-bottom: 4px solid #FFF;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+      #logo {
+        padding-left: 2%;
+      }
+      #azavea {
+        padding-left: 2%;
+      }
+      #title {
+        color: #FFF;
+        font-size: 2.1vh;
+        text-align: center;
+        flex: 1;
+      }
+      img.globe {
+        display: block;
+        margin-left: -6px;
+        margin-top: -4px;
+      }
+      .sidebar {
+        position: absolute;
+        padding: 3% 3% 3% 4%;
+        background: #000;
+        color: #FFF;
+        font-size: 1.9vh;
+        line-height: 1.4;
+        overflow-y: auto;
+        box-sizing: border-box;
+      }
+      .sidebar p {
+        margin: 0;
+      }
+      div.cartodb-timeslider {
+        left:10px;
+        right:10px;
+        height:80px;
+        background-color: #000;
+        opacity: 0.8;
+        border: #FFF 4px solid;
+      }
+      li.controls, li.time {
+        position:absolute;
+        top:8px;
+        border:none!important;
+        z-index:10;
+      }
+      li.controls {
+        left:50%;
+        margin-left:-100px;
+      }
+      div.cartodb-timeslider a.button {
+          display: block;
+          width: 48px;
+          height: 40px;
+          line-height: 0;
+          font-size: 0;
+          background-color: #FFF;
+          border-radius: 5px;
+          /*background: url(http://cliparts.co/cliparts/pT5/8xK/pT58xKE7c.png) no-repeat 5px;*/
+      }
+      div.cartodb-timeslider p {
+        width: 120px;
+        height: 40px;
+        margin: 0;
+        padding: 0 0 0 0;
+        line-height: 40px;
+        font-size: 1.8vh;
+        font-weight: 500;
+        font-family: Helvetica,Arial;
+        text-align: center;
+        color: #FFF;
+      }
+      li.time {
+        right:50%;
+        margin-right:-100px;
+      }
+      div.cartodb-timeslider li.last {
+        position:absolute;
+        left:15px;
+        right:15px;
+        z-index:2;
+      }
+      div.cartodb-timeslider .slider {
+        width: 100%;
+      }
+      div.cartodb-timeslider .slider-wrapper {
+        position:absolute;
+        left:0;
+        right:0;
+        width:100%;
+        padding:60px 0 15px;
+      }
+    </style>
+
+    <style type="cartocss/text" id="cartocss">
+    /** torque_heat visualization */
+    Map {
+    -torque-frame-count:300;
+    -torque-animation-duration:100;
+    -torque-time-attribute:"_1st_max_datetime";
+    -torque-aggregation-function:"avg(arithmetic_mean)";
+    -torque-resolution:1;
+    -torque-data-aggregation:linear;
+    }
+    #epa_all_clean_final{
+      image-filters: colorize-alpha(#08519C, #08519C, #6BAED6, #F7F7F7, #FCFAB8, #FCF402);
+      marker-file: url(https://s3.amazonaws.com/com.cartodb.assets.static/alphamarker.png);
+      marker-fill-opacity: 0.4*[value];
+      marker-width: 35;
+      [zoom > 5][zoom<7]{
+        marker-width: 40;
+      }
+      [zoom > 7][zoom<9]{
+        marker-width: 50;
+      }
+      [zoom> 9]{
+        marker-width: 60;
+      }
+    }
+    #epa_all_clean_final[frame-offset=1] {
+     marker-width:37;
+     marker-fill-opacity:0.2;
+    }
+    #epa_all_clean_final[frame-offset=2] {
+     marker-width:39;
+     marker-fill-opacity:0.1;
+    }
+    </style>
+
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="container">
+        <div id="logo">
+          <img src="css/images/chf.png" style="height:7vh;">
+        </div>
+        <div id ="azavea">
+          <img src="css/images/azavea.png" style="height:8vh;">
+        </div>
+        <div id="title">
+          <h1>MONTHLY AIR POLLUTION IN THE UNITED STATES: 1990-2015</h1>
+        </div>
+    </div>
+    <div class="container">
+      <div class="layer_selector">
+        <p>Select a Criteria Air Pollutant</p>
+        <ul>
+            <li data="XXXXX">All Criteria Pollutants <div class="all_circle" style="float: left;"></div> </li>
+            <li data="carbon monoxide">Carbon Monoxide (CO) <div class="cm_circle" style="float: left;"></div> </li>
+            <li data="lead">Lead (Pb) <div class="lead_circle" style="float: left;"></div> </li>
+            <li data="nitrogen dioxide">Nitrogen Dioxide (NO2) <div class="nd_circle" style="float: left;"></div> </li>
+            <li data="ozone">Ozone (O3) <div class="o_circle" style="float: left;"></div> </li>
+            <li data="PM">Particulate Matter (PM2.5 / PM10) <div class="pm_circle" style="float: left;"></div> </li>
+            <li data="sulfur dioxide">Sulfur Dioxide (SO2) <div class="sd_circle" style="float: left;"></div> </li>
+        </ul>
+      </div>
+      <div class="sidebar">
+        <p>The EPA monitors many air pollutants that are dangerous to both you and the environment. The data represented in the visualization represents concentration levels of all six official 'criteria pollutants.' The six featured pollutants are called 'criteria pollutants' because the Clean Air Act requires the EPA to set and monitor concentration standards for them. The EPA has air quality monitoring stations located throughout the United States that track concentration levels of these and other pollutants.</p>
+      </div>
+    </div>
+
+    <!-- include cartodb.js library -->
+    <script src="https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/3.15/cartodb.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet-src.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+    <script type="text/javascript" src="js/leaflet.easybutton.js"></script>
+
+    <!-- Drop your code between the script tags below! -->
+    <script>
+    // Instantiate new map object, place it in 'map' element
+    var map = new L.map('map', {
+      center: [38.258969, -95.697771],
+      zoom: 5,
+    });
+
+    // Default zoom
+    var defaultViewFunc = function(){
+      map.setView([38.258969, -95.697771],5);
+    };
+
+    var layerSource = {
+      type: 'torque',
+      options: {
+        user_name: 'chemheritage', // replace with your user name
+        table_name: 'epa_all_clean_final',
+        tiler_protocol: "https",
+        tiler_port: "443",
+        cartocss: $("#cartocss").text(),
+      }
+    };
+
+    var text = {
+          'carbon monoxide': [
+            "CARBON MONOXIDE: Arnold O. Beckman used a gas concentration analyzer to track carbon monoxide (CO) in the 1950s in Los Angeles (a.k.a. 'Smogtown'). CO is a poisonous, odorless, colorless and toxic gas that also acts as an indirect contributor to climate change. In the air, carbon monoxide reacts with hydroxyl radicals (OH) to create the potent greenhouse gas carbon dioxide (CO2). In addition, the uptake of OH creates a situation where an even more potent greenhouse gas, methane, remains in the atmosphere. Although vehicles are the primary culprit, slash and burn agriculture, industry, forest fires and volcanoes also release CO."
+          ],
+          'lead': [
+            "LEAD: Lead is a dangerous element that has been linked to a broad range of health issues. Airborne lead is known to cause malfunctions in the nervous, kidney, and immune systems, reductions in oxygen carrying capacity in the blood, and behavioral problems, learning deficits and lowered IQ. Sources of lead in the US include the processing of ores and metals, the use of leaded aviation fuel, waste incinerators, manufacturers of lead-acid batteries, and lead smelting. The successful removal of lead from automobile gasoline in the US reduced lead levels in the air by 98% between 1980 and 2014."
+          ],
+          'nitrogen dioxide': [
+            "NITROGEN DIOXIDE: Nitrogen dioxide (NO2) is a highly reactive gas that forms in the atmosphere from the emissions of cars, trucks, buses, power plants, and off-road equipment. This suffocating, brownish gas reacts in the air to form corrosive nitric acid and toxic organic nitrates. NO2 plays a major role in the formation of ground-level ozone and fine particle pollution, and is linked with a number of adverse effects on the respiratory system. Average NO2 concentrations in 1995 were 14 percent lower than the average concentrations recorded in 1986. Even though the lowering trend continues, NO2 remains an air quality and health risk today."
+          ],
+          'ozone': [
+            "OZONE: In 1952 Arnold Beckman invented an instrument to detect ozone and other air pollutants in Los Angeles. In his device, he used a chemical that turns different shades of pink when in the presence of oxidants. Ozone is a highly reactive oxidant made of three oxygen molecules (O3). In the stratosphere, it protects life by absorbing ultraviolet radiation. On the ground, ozone damages plants and can trigger dangerous reactions in children, the elderly, and people with conditions like asthma. Ground-level ozone is the result of reactions between nitrogen oxides (NOx) and volatile organic compounds (VOCs) released by industries, electric utilities, cars, and chemical solvents."
+          ],
+          'PM': [
+            "PARTICULATE MATTER: The EPA uses lasers and light-scattering photometers to monitor particulate matter (PM). These extremely small particles can pass directly into your lungs where they cause damage. This means particulate matter is especially dangerous to children and active adults who tend to spend more time outside. Particulate matter is a mixture of materials generated by various activities. Crushing and grinding stone, construction, and dirt and paved roads are the sources of the coarser PM10 particles. Cars, forest fires, power plants and some industrial processes create the finer PM2.5 particles. Both PM10 and PM2.5 are dangerous."
+          ],
+          'sulfur dioxide': [
+            "SULFUR DIOXIDE: In addition to several other chemicals, Arnold Beckman used his smog analyzer (on the shelf behind you) to detect sulfur dioxide (SO2). Monitoring of SO2 began in the 1950s, several decades before the EPA set standards for this pollutant. Continual regulation since then has reduced the amount of SO2 in the air we breathe dramatically. The largest contributors of SO2 today include manufacturing, oil refining, and the burning of fossil fuels for electricity, trains, cars, trucks, ships, and construction equipment. Once in the atmosphere, this smelly pollutant is known to increase asthma and bronchial symptoms and cause acid rain."
+          ],
+          'XXXXX': [
+            "CRITERIA AIR POLLUTANTS: The EPA monitors many air pollutants that are dangerous to both you and the environment. The data represented in the visualization represents concentration levels of all six official 'criteria pollutants.' The six featured pollutants are called 'criteria pollutants' because the Clean Air Act requires the EPA to set and monitor concentration standards for them. The EPA has air quality monitoring stations located throughout the United States that track concentration levels of these and other pollutants."
+          ]
+    };
+
+    var cartocss = {
+          'carbon monoxide': [
+            "Map {",
+            "-torque-frame-count:300;",
+            "-torque-animation-duration:100;",
+            "-torque-time-attribute:'_1st_max_datetime';",
+            "-torque-aggregation-function:'avg(arithmetic_mean)';",
+            "-torque-resolution:1;",
+            "-torque-data-aggregation:linear;",
+            "}",
+
+            "#epa_all_clean_final{",
+              "image-filters: colorize-alpha(#FEE5D9, #FCAE91, #FB6A4A, #DE2D26, #A50F15);",
+              "marker-file: url(https://s3.amazonaws.com/com.cartodb.assets.static/alphamarker.png);",
+              "marker-fill-opacity: 0.4*[value];",
+              "marker-width: 35;",
+              "[zoom > 5][zoom<7]{",
+                "marker-width: 40;",
+              "}",
+              "[zoom > 7][zoom<9]{",
+                "marker-width: 50;",
+              "}",
+              "[zoom> 9]{",
+                "marker-width: 60;",
+              "}",
+            "}",
+            "#epa_all_clean_final[frame-offset=1] {",
+             "marker-width:37;",
+             "marker-fill-opacity:0.2;",
+            "}",
+            "#epa_all_clean_final[frame-offset=2] {",
+             "marker-width:39;",
+             "marker-fill-opacity:0.1;",
+          "};"].join(''),
+          'lead': [
+            "Map {",
+            "-torque-frame-count:300;",
+            "-torque-animation-duration:100;",
+            "-torque-time-attribute:'_1st_max_datetime';",
+            "-torque-aggregation-function:'avg(arithmetic_mean)';",
+            "-torque-resolution:1;",
+            "-torque-data-aggregation:linear;",
+            "}",
+
+            "#epa_all_clean_final{",
+              "image-filters: colorize-alpha(#EFF3FF, #BDD7E7, #6BAED6, #3182BD, #08519C);",
+              "marker-file: url(https://s3.amazonaws.com/com.cartodb.assets.static/alphamarker.png);",
+              "marker-fill-opacity: 0.4*[value];",
+              "marker-width: 35;",
+              "[zoom > 5][zoom<7]{",
+                "marker-width: 40;",
+              "}",
+              "[zoom > 7][zoom<9]{",
+                "marker-width: 50;",
+              "}",
+              "[zoom> 9]{",
+                "marker-width: 60;",
+              "}",
+            "}",
+            "#epa_all_clean_final[frame-offset=1] {",
+             "marker-width:37;",
+             "marker-fill-opacity:0.2;",
+            "}",
+            "#epa_all_clean_final[frame-offset=2] {",
+             "marker-width:39;",
+             "marker-fill-opacity:0.1;",
+          "};"].join(''),
+          'nitrogen dioxide': [
+            "Map {",
+            "-torque-frame-count:300;",
+            "-torque-animation-duration:100;",
+            "-torque-time-attribute:'_1st_max_datetime';",
+            "-torque-aggregation-function:'avg(arithmetic_mean)';",
+            "-torque-resolution:1;",
+            "-torque-data-aggregation:linear;",
+            "}",
+
+            "#epa_all_clean_final{",
+              "image-filters: colorize-alpha(#FCECDF, #7A5230, #614126, #49311C, #35200D);",
+              "marker-file: url(https://s3.amazonaws.com/com.cartodb.assets.static/alphamarker.png);",
+              "marker-fill-opacity: 0.4*[value];",
+              "marker-width: 35;",
+              "[zoom > 5][zoom<7]{",
+                "marker-width: 40;",
+              "}",
+              "[zoom > 7][zoom<9]{",
+                "marker-width: 50;",
+              "}",
+              "[zoom> 9]{",
+                "marker-width: 60;",
+              "}",
+            "}",
+            "#epa_all_clean_final[frame-offset=1] {",
+             "marker-width:37;",
+             "marker-fill-opacity:0.2;",
+            "}",
+            "#epa_all_clean_final[frame-offset=2] {",
+             "marker-width:39;",
+             "marker-fill-opacity:0.1;",
+          "};"].join(''),
+          'ozone': [
+            "Map {",
+            "-torque-frame-count:300;",
+            "-torque-animation-duration:100;",
+            "-torque-time-attribute:'_1st_max_datetime';",
+            "-torque-aggregation-function:'avg(arithmetic_mean*10)';",
+            "-torque-resolution:1;",
+            "-torque-data-aggregation:linear;",
+            "}",
+
+            "#epa_all_clean_final{",
+              "image-filters: colorize-alpha(#FEEDDE, #FDBE85, #FD8D3C, #E6550D, #A63603);",
+              "marker-file: url(https://s3.amazonaws.com/com.cartodb.assets.static/alphamarker.png);",
+              "marker-fill-opacity: 0.4*[value];",
+              "marker-width: 35;","[zoom > 5][zoom<7]{",
+                "marker-width: 40;",
+              "}",
+              "[zoom > 7][zoom<9]{",
+                "marker-width: 50;",
+              "}",
+              "[zoom> 9]{",
+                "marker-width: 60;",
+              "}",
+            "}",
+            "#epa_all_clean_final[frame-offset=1] {",
+             "marker-width:37;",
+             "marker-fill-opacity:0.2;",
+            "}",
+            "#epa_all_clean_final[frame-offset=2] {",
+             "marker-width:39;",
+             "marker-fill-opacity:0.1;",
+          "};"].join(''),
+          'PM': [
+            "Map {",
+            "-torque-frame-count:300;",
+            "-torque-animation-duration:100;",
+            "-torque-time-attribute:'_1st_max_datetime';",
+            "-torque-aggregation-function:'avg(arithmetic_mean)';",
+            "-torque-resolution:1;",
+            "-torque-data-aggregation:linear;",
+            "}",
+
+            "#epa_all_clean_final{",
+              "image-filters: colorize-alpha(#F2F0F7, #CBC9E2, #9E9AC8, #756BB1, #54278F);",
+              "marker-file: url(https://s3.amazonaws.com/com.cartodb.assets.static/alphamarker.png);",
+              "marker-fill-opacity: 0.4*[value];",
+              "marker-width: 35;",
+              "[zoom > 5][zoom<7]{",
+                "marker-width: 40;",
+              "}",
+              "[zoom > 7][zoom<9]{",
+                "marker-width: 50;",
+              "}",
+              "[zoom> 9]{",
+                "marker-width: 60;",
+              "}",
+            "}",
+            "#epa_all_clean_final[frame-offset=1] {",
+             "marker-width:37;",
+             "marker-fill-opacity:0.2;",
+            "}",
+            "#epa_all_clean_final[frame-offset=2] {",
+             "marker-width:39;",
+             "marker-fill-opacity:0.1;",
+          "};"].join(''),
+          'sulfur dioxide': [
+            "Map {",
+            "-torque-frame-count:300;",
+            "-torque-animation-duration:100;",
+            "-torque-time-attribute:'_1st_max_datetime';",
+            "-torque-aggregation-function:'avg(arithmetic_mean)';",
+            "-torque-resolution:1;",
+            "-torque-data-aggregation:linear;",
+            "}",
+            "#epa_all_clean_final{",
+              "image-filters: colorize-alpha(#FCFAB8, #FCF402);",
+              "marker-file: url(https://s3.amazonaws.com/com.cartodb.assets.static/alphamarker.png);",
+              "marker-fill-opacity: 0.4*[value];",
+              "marker-width: 35;",
+              "[zoom > 5][zoom<7]{",
+                "marker-width: 40;",
+              "}",
+              "[zoom > 7][zoom<9]{",
+                "marker-width: 50;",
+              "}",
+              "[zoom> 9]{",
+                "marker-width: 60;",
+              "}",
+            "}",
+            "#epa_all_clean_final[frame-offset=1] {",
+             "marker-width:37;",
+             "marker-fill-opacity:0.2;",
+            "}",
+            "#epa_all_clean_final[frame-offset=2] {",
+             "marker-width:39;",
+             "marker-fill-opacity:0.1;",
+          ",};"].join('')
+    };
+
+    // Add a basemap to the map object just created
+    L.tileLayer('https://a.tiles.mapbox.com/v4/mapbox.dark/{z}/{x}/{y}.png?access_token={token}', {
+      attribution: 'Mapbox',
+      subdomains: ['a','b','c','d'],
+      token: 'pk.eyJ1IjoiYXNjaGVlcmVzIiwiYSI6ImNpcHUwdDV2NDA3NWtmb20yaWx5dGowamgifQ.2ElOHLz-dlArxPvDnDGpEA',
+    }).addTo(map);
+
+    // This creates the button on the side that allows you to go back to the default View
+    L.easyButton('<img src="css/images/globe.png" class=globe>', function(btn, map){
+      defaultViewFunc();
+    }).addTo(map);
+
+    // Change layer selector color on click
+    $('.layer_selector li').click(function() {
+      $(this).css('background-color', '#464646').siblings().css('background-color', '');
+    });
+
+    // Create layer selector
+    function createSelector(layer) {
+      var condition = "";
+      var $options = $(".layer_selector").find("li");
+        $options.click(function(e) {
+        layer.stop();
+        var $li = $(e.target);
+        var selected = $li.attr('data');
+        var newSQL, newStyle, newText;
+        if (selected === 'XXXXX') {
+          newSQL = "SELECT * FROM epa_all_clean_final";
+          newStyle = $("#cartocss").text();
+          newText = text[selected];
+          $("#location").text("");
+        } else {
+          var qryStr = "SELECT * FROM epa_all_clean_final WHERE parameter_name ILIKE '%{{pollutant}}%'";
+          newSQL = Mustache.render(qryStr, {pollutant: selected});
+          newStyle = cartocss[selected];
+          newText = text[selected];
+          $("#location").text("to " + selected);
+        }
+
+          $(".sidebar").text(newText);
+          layer.setCartoCSS(newStyle);
+          layer.setSQL(newSQL).on('load', function() {
+            layer.play();
+          });
+        });
+    }
+
+    // put torque layer on top of basemap
+    cartodb.createLayer(map, layerSource)
+      .addTo(map)
+      .done(function(layer) {
+        var torqueLayer = layer;
+        torqueLayer.pause();
+
+        // once animation is loaded, automatically play
+        torqueLayer.on('load', function() {
+          torqueLayer.play();
+        });
+
+        // // pause animation at last frame
+        // torqueLayer.on('change:time', function(changes) {
+        //   if (changes.step === torqueLayer.provider.getSteps() - 1) {
+        //     torqueLayer.pause();
+        //   }
+        // });
+
+        createSelector(torqueLayer);
+      })
+      .error(function(err) {
+        console.log("Error: " + err);
+      });
+
+    </script>
+  </body>
+</html>
